@@ -4,8 +4,8 @@ import Link from "next/link";
 import MobileMenu from "./MobileMenu";
 
 const navLinks = [
-  { label: "Courses", href: "/#courses" },
-  { label: "About", href: "/#about" },
+  { label: "Courses", href: "/courses" },
+  { label: "About", href: "/about" },
   { label: "Contact Us", href: "/contact" },
   { label: "Reviews", href: "/reviews" },
   { label: "FAQs", href: "/faqs" },
