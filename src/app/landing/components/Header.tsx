@@ -7,8 +7,8 @@ const navLinks = [
   { label: "Courses", href: "/courses" },
   { label: "About", href: "/about" },
   { label: "Contact Us", href: "/contact" },
-  { label: "Reviews", href: "/reviews" },
-  { label: "FAQs", href: "/faqs" },
+  { label: "Reviews", href: "/#reviews" },
+  { label: "FAQs", href: "/#faqs" },
 ];
 
 function Header() {
