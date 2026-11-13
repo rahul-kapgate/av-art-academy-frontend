@@ -1,7 +1,7 @@
-
 import Image from "next/image";
 import Link from "next/link";
 import MobileMenu from "./MobileMenu";
+import AuthButton from "@/src/features/auth/components/AuthButton";
 
 const navLinks = [
   { label: "Courses", href: "/courses" },
@@ -63,12 +63,8 @@ function Header() {
                 md:text-2xl
               "
             >
-              <span className="text-cyan-400">
-                AV Art
-              </span>
-              <span className="text-white">
-                {" "}Academy
-              </span>
+              <span className="text-cyan-400">AV Art</span>
+              <span className="text-white"> Academy</span>
             </span>
 
             <span
@@ -111,24 +107,23 @@ function Header() {
         </nav>
 
         {/* Desktop Login */}
-        <Link
-          href="/login"
+
+        <AuthButton
+          mode="login"
+          showSession
           className="
-            hidden shrink-0 items-center
-            justify-center rounded-lg
-            border border-blue-400
-            px-5 py-2.5
-            text-sm font-semibold
-            text-blue-100
-            transition-colors duration-200
-            hover:bg-blue-700/40
-            focus-visible:outline-2
-            focus-visible:outline-cyan-400
-            lg:inline-flex
-          "
-        >
-          Login
-        </Link>
+    inline-flex min-h-10
+    items-center justify-center
+    rounded-lg bg-cyan-400
+    px-5 py-2.5
+    text-sm font-bold
+    text-[#061426]
+    transition-colors
+    hover:bg-cyan-300
+    disabled:cursor-not-allowed
+    disabled:opacity-50
+  "
+        />
 
         {/* Interactive Mobile Menu */}
         <MobileMenu links={navLinks} />

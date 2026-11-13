@@ -1,8 +1,8 @@
-
 "use client";
 
 import Link from "next/link";
 import { useState } from "react";
+import AuthButton from "@/src/features/auth/components/AuthButton";
 
 type NavLink = {
   label: string;
@@ -22,9 +22,7 @@ function MobileMenu({ links }: MobileMenuProps) {
     <div className="lg:hidden">
       <button
         type="button"
-        aria-label={
-          isOpen ? "Close navigation" : "Open navigation"
-        }
+        aria-label={isOpen ? "Close navigation" : "Open navigation"}
         aria-expanded={isOpen}
         aria-controls="mobile-navigation"
         onClick={() => setIsOpen((prev) => !prev)}
@@ -102,20 +100,25 @@ function MobileMenu({ links }: MobileMenuProps) {
               ))}
             </div>
 
-            <Link
-              href="/login"
-              onClick={closeMenu}
+            <AuthButton
+              mode="login"
+              label="Login / Sign Up"
+              showSession
+              onOpen={() => {
+                // Use your existing mobile menu close handler.
+                setIsOpen(false);
+              }}
               className="
-                mt-6 flex h-11 items-center
-                justify-center rounded-lg
-                border border-blue-400
-                font-semibold text-blue-100
-                transition-colors
-                hover:bg-blue-700/40
-              "
-            >
-              Login
-            </Link>
+    flex min-h-12 w-full
+    items-center justify-center
+    rounded-xl bg-cyan-400
+    px-5 py-3
+    text-sm font-bold
+    text-[#061426]
+    hover:bg-cyan-300
+    disabled:opacity-50
+  "
+            />
           </div>
         </nav>
       )}

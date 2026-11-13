@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
+import { AuthProvider } from "@/src/features/auth/context/AuthProvider";
 
 import "./globals.css";
 
@@ -105,7 +106,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           font-sans antialiased
         "
       >
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
