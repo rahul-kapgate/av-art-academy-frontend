@@ -88,3 +88,11 @@ export interface GoogleLoginPayload
   extends DeviceInfo {
   idToken: string;
 }
+
+export interface RefreshResponse {
+  accessToken: string;
+  accessTokenExpiresIn: number;
+  sessionExpiresAt?: string;
+
+  user?: AuthUser;
+}

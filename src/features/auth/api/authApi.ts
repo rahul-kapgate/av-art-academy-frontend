@@ -1,5 +1,8 @@
 import { apiRequest } from "@/src/lib/api/client";
 import { ApiError } from "@/src/lib/api/apiError";
+import { getDeviceId } from "@/src/lib/device";
+
+import { authStorage } from "../utils/authStorage";
 
 import type {
   AuthSession,
@@ -10,15 +13,28 @@ import type {
   RegisterVerificationResponse,
   ResendRegistrationRequest,
   ResendRegistrationResponse,
+  RefreshResponse,
+  AuthUser,
 } from "../types";
 
 // Keep compatibility with existing AuthDialog
 // and AuthProvider imports.
 export { ApiError as AuthApiError } from "@/src/lib/api/apiError";
 
-const WEB_CLIENT = {
-  clientType: "web",
-} as const;
+/* =========================================
+   WEB DEVICE INFORMATION
+========================================== */
+
+function getWebDeviceInfo() {
+  return {
+    deviceId: getDeviceId(),
+    platform: "web" as const,
+  };
+}
+
+/* =========================================
+   VALIDATE AUTHENTICATION SESSION
+========================================== */
 
 function validateSession(session: AuthSession): AuthSession {
   if (
@@ -39,8 +55,14 @@ function validateSession(session: AuthSession): AuthSession {
   };
 }
 
+/* =========================================
+   AUTHENTICATION API
+========================================== */
+
 export const authApi = {
-  /* Register */
+  /* =======================================
+     REGISTER
+  ======================================= */
 
   register(payload: RegisterRequest) {
     return apiRequest<RegistrationChallenge>({
@@ -50,7 +72,9 @@ export const authApi = {
     });
   },
 
-  /* Verify Registration OTP */
+  /* =======================================
+     VERIFY REGISTRATION OTP
+  ======================================= */
 
   verifyRegistration(payload: VerifyRegistrationRequest) {
     return apiRequest<RegisterVerificationResponse>({
@@ -60,7 +84,9 @@ export const authApi = {
     });
   },
 
-  /* Resend Registration OTP */
+  /* =======================================
+     RESEND REGISTRATION OTP
+  ======================================= */
 
   resendRegistration(payload: ResendRegistrationRequest) {
     return apiRequest<ResendRegistrationResponse>({
@@ -70,56 +96,87 @@ export const authApi = {
     });
   },
 
-  /* Login */
+  /* =======================================
+     LOGIN
+  ======================================= */
 
-  async login(payload: LoginRequest) {
+  async login(payload: LoginRequest): Promise<AuthSession> {
     const session = await apiRequest<AuthSession>({
       method: "POST",
       url: "/auth/login",
+
       data: {
         ...payload,
-        ...WEB_CLIENT,
+        ...getWebDeviceInfo(),
       },
     });
 
     return validateSession(session);
   },
 
-  /* Google Login */
+  /* =======================================
+     GOOGLE LOGIN
+  ======================================= */
 
-  async google(idToken: string) {
+  async google(idToken: string): Promise<AuthSession> {
     const session = await apiRequest<AuthSession>({
       method: "POST",
       url: "/auth/google",
+
       data: {
         idToken,
-        ...WEB_CLIENT,
+        ...getWebDeviceInfo(),
       },
     });
 
     return validateSession(session);
   },
 
-  /* Refresh Access Token */
+  /* =======================================
+     REFRESH ACCESS TOKEN
+  ======================================= */
 
-  async refresh() {
-    const session = await apiRequest<AuthSession>({
+  async refresh(currentUser?: AuthUser): Promise<AuthSession> {
+    const result = await apiRequest<RefreshResponse>({
       method: "POST",
       url: "/auth/refresh",
-      data: WEB_CLIENT,
+      data: getWebDeviceInfo(),
     });
 
-    return validateSession(session);
+    if (
+      !result ||
+      typeof result.accessToken !== "string" ||
+      !result.accessToken ||
+      !Number.isFinite(result.accessTokenExpiresIn) ||
+      result.accessTokenExpiresIn <= 0
+    ) {
+      throw new ApiError("Invalid refresh session.", 502);
+    }
+
+    return validateSession({
+      user: result.user ??
+        currentUser ??
+        authStorage.getUser() ?? { name: "My Account" },
+
+      accessToken: result.accessToken,
+
+      accessTokenExpiresIn: result.accessTokenExpiresIn,
+
+      sessionExpiresAt: result.sessionExpiresAt,
+    });
   },
 
-  /* Logout */
+  /* =======================================
+     LOGOUT
+  ======================================= */
 
-  logout(accessToken?: string) {
-    return apiRequest<void>(
+  async logout(accessToken?: string): Promise<void> {
+    await apiRequest<void>(
       {
         method: "POST",
         url: "/auth/logout",
-        data: WEB_CLIENT,
+
+        data: getWebDeviceInfo(),
 
         headers: accessToken
           ? {
