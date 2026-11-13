@@ -4,6 +4,7 @@ import HeroSection from "./components/HeroSection";
 // import CoursesSection from "./components/CoursesSection";
 import Footer from "./components/Footer";
 import AppDownloadSection from "./components/AppDownloadSection";
+import BrandSignature from "./components/BrandSignature";
 
 export default function LandingPage() {
   return (
@@ -18,6 +19,7 @@ export default function LandingPage() {
       </main>
 
       <Footer />
+      <BrandSignature />
     </>
   );
 }
