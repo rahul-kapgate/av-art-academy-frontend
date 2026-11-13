@@ -10,6 +10,8 @@ import {
 
 interface CoursesCarouselProps {
   children: ReactNode;
+  itemLabel?: string;
+  regionLabel?: string;
 }
 
 function ChevronLeftIcon() {
@@ -48,7 +50,11 @@ function ChevronRightIcon() {
   );
 }
 
-function CoursesCarousel({ children }: CoursesCarouselProps) {
+function CoursesCarousel({
+  children,
+  itemLabel = "course",
+  regionLabel = "Available courses carousel",
+}: CoursesCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -179,7 +185,7 @@ function CoursesCarousel({ children }: CoursesCarouselProps) {
         ref={scrollRef}
         onScroll={updateScrollState}
         role="region"
-        aria-label="Available courses carousel"
+        aria-label={regionLabel}
         tabIndex={0}
         className="
           grid min-w-0
@@ -221,7 +227,7 @@ function CoursesCarousel({ children }: CoursesCarouselProps) {
       {hasOverflow && (
         <button
           type="button"
-          aria-label="Scroll to previous course"
+          aria-label={`Scroll to previous ${itemLabel}`}
           disabled={!canScrollLeft}
           onClick={() => scrollCourses("left")}
           className={`
@@ -241,7 +247,7 @@ function CoursesCarousel({ children }: CoursesCarouselProps) {
       {hasOverflow && (
         <button
           type="button"
-          aria-label="Scroll to next course"
+          aria-label={`Scroll to next ${itemLabel}`}
           disabled={!canScrollRight}
           onClick={() => scrollCourses("right")}
           className={`
@@ -283,10 +289,10 @@ function CoursesCarousel({ children }: CoursesCarouselProps) {
             <path d="m16 8 4 4-4 4" />
           </svg>
 
-          <span className="sm:hidden">Swipe to explore more courses</span>
+          <span className="sm:hidden">Swipe to explore more {itemLabel}s</span>
 
           <span className="hidden sm:inline">
-            Use arrows to explore more courses
+            Use arrows to explore more {itemLabel}s
           </span>
         </div>
       )}

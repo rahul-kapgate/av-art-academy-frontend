@@ -129,11 +129,22 @@
   }
 }
 
-
 @theme inline {
   --font-sans: var(--font-jakarta), Arial, sans-serif;
 }
 
 body {
   font-family: var(--font-jakarta), Arial, sans-serif;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
