@@ -5,6 +5,7 @@ import HeroSection from "./components/HeroSection";
 import Footer from "./components/Footer";
 import AppDownloadSection from "./components/AppDownloadSection";
 import BrandSignature from "./components/BrandSignature";
+import CoursesSection from "./components/CoursesSection";
 
 export default function LandingPage() {
   return (
@@ -13,6 +14,7 @@ export default function LandingPage() {
 
       <main>
         <HeroSection />
+         <CoursesSection />
         {/* <AboutSection />
         <CoursesSection /> */}
         <AppDownloadSection />
