@@ -1,9 +1,12 @@
+
 import "server-only";
 
 import { cacheLife, cacheTag } from "next/cache";
 
-import { mockCourses } from "../data/mockCourses";
-import type { Course, CoursesResponse } from "../types";
+import { apiRequest } from "@/src/lib/api/client";
+import { ApiError } from "@/src/lib/api/apiError";
+
+import type { Course } from "../types";
 
 export async function getCourses(): Promise<Course[]> {
   "use cache";
@@ -16,39 +19,30 @@ export async function getCourses(): Promise<Course[]> {
 
   cacheTag("courses");
 
-  // Use dummy data during frontend development.
-  const dataSource = process.env.COURSES_DATA_SOURCE || "mock";
-
-  if (dataSource === "mock") {
-    return mockCourses;
-  }
-
-  // Actual backend integration.
   const apiBaseUrl = process.env.API_BASE_URL;
 
   if (!apiBaseUrl) {
     throw new Error("API_BASE_URL is not configured.");
   }
 
-  const endpoint = `${apiBaseUrl.replace(/\/$/, "")}/api/v1/courses`;
-
-  const response = await fetch(endpoint, {
+  const courses = await apiRequest<Course[]>({
     method: "GET",
 
-    headers: {
-      Accept: "application/json",
-    },
+    baseURL: `${apiBaseUrl.replace(/\/+$/, "")}/api/v1`,
+
+    url: "/courses",
+
+    requiresAuth: false,
+
+    withCredentials: false,
   });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch courses: ${response.status}`);
+  if (!Array.isArray(courses)) {
+    throw new ApiError(
+      "Invalid courses API response.",
+      502,
+    );
   }
 
-  const result: CoursesResponse = await response.json();
-
-  if (!result.success || !Array.isArray(result.data)) {
-    throw new Error("Invalid courses API response.");
-  }
-
-  return result.data;
+  return courses;
 }
