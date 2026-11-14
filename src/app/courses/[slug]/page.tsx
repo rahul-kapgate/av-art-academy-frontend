@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 
 import Image from "next/image";
@@ -13,14 +12,7 @@ import CourseEnrollmentAction from "@/src/features/courses/components/CourseEnro
 
 import { getCourseBySlug } from "@/src/features/courses/api/getCourseBySlug";
 
-import { getCoursePricing } from "@/src/features/courses/utils/coursePricing";
-
-import { getCourseImageUrl } from "@/src/features/courses/utils/courseMedia";
-
-import type {
-  CourseAccess,
-  CourseDetails,
-} from "@/src/features/courses/types";
+import type { CourseAccess, CourseDetails } from "@/src/features/courses/types";
 
 /* =========================================
    PAGE PROPS
@@ -46,7 +38,6 @@ export async function generateMetadata({
   if (!course) {
     return {
       title: "Course Not Found",
-
       robots: {
         index: false,
         follow: false,
@@ -54,16 +45,9 @@ export async function generateMetadata({
     };
   }
 
-  const canonicalPath =
-    `/courses/${encodeURIComponent(course.slug)}`;
+  const canonicalPath = `/courses/${encodeURIComponent(course.slug)}`;
 
-  const image =
-    getCourseImageUrl(
-      course.media.bannerPath,
-    ) ??
-    getCourseImageUrl(
-      course.media.thumbnailPath,
-    );
+  const image = course.media.bannerPath || course.media.thumbnailPath;
 
   return {
     title: course.title,
@@ -76,14 +60,9 @@ export async function generateMetadata({
 
     openGraph: {
       type: "website",
-
       title: course.title,
-
-      description:
-        course.shortDescription,
-
+      description: course.shortDescription,
       url: canonicalPath,
-
       siteName: "AV Art Academy",
 
       ...(image
@@ -100,15 +79,10 @@ export async function generateMetadata({
 
     twitter: {
       card: "summary_large_image",
-
       title: course.title,
+      description: course.shortDescription,
 
-      description:
-        course.shortDescription,
-
-      ...(image
-        ? { images: [image] }
-        : {}),
+      ...(image ? { images: [image] } : {}),
     },
   };
 }
@@ -117,21 +91,14 @@ export async function generateMetadata({
    FORMAT COURSE DURATION
 ========================================== */
 
-function formatDuration(
-  minutes: number | null,
-): string | null {
-  if (
-    minutes === null ||
-    !Number.isFinite(minutes) ||
-    minutes <= 0
-  ) {
+function formatDuration(minutes: number | null): string | null {
+  if (minutes === null || !Number.isFinite(minutes) || minutes <= 0) {
     return null;
   }
 
   const hours = Math.floor(minutes / 60);
 
-  const remainingMinutes =
-    Math.floor(minutes % 60);
+  const remainingMinutes = Math.floor(minutes % 60);
 
   if (hours === 0) {
     return `${remainingMinutes} min`;
@@ -146,9 +113,7 @@ function formatDuration(
    FORMAT COURSE ACCESS
 ========================================== */
 
-function formatAccess(
-  access: CourseAccess,
-): string {
+function formatAccess(access: CourseAccess): string {
   if (access.type === "lifetime") {
     return "Lifetime access";
   }
@@ -161,15 +126,12 @@ function formatAccess(
     const date = new Date(access.endAt);
 
     if (!Number.isNaN(date.getTime())) {
-      return `Access until ${date.toLocaleDateString(
-        "en-IN",
-        {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-          timeZone: "Asia/Kolkata",
-        },
-      )}`;
+      return `Access until ${date.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        timeZone: "Asia/Kolkata",
+      })}`;
     }
   }
 
@@ -261,27 +223,44 @@ function LanguageIcon() {
    COURSE INFORMATION CARD
 ========================================== */
 
-function CourseInfoCard({
-  course,
-}: {
-  course: CourseDetails;
-}) {
-  const pricing =
-    getCoursePricing(course.pricing);
+function CourseInfoCard({ course }: { course: CourseDetails }) {
+  const { isFree, priceAmount, salePriceAmount, currency } = course.pricing;
 
-  const duration = formatDuration(
-    course.estimatedDurationMinutes,
-  );
+  // Use actual API pricing.
+  const discountedPrice =
+    !isFree &&
+    priceAmount > 0 &&
+    salePriceAmount !== null &&
+    salePriceAmount >= 0 &&
+    salePriceAmount < priceAmount
+      ? salePriceAmount
+      : null;
+
+  const hasDiscount = discountedPrice !== null;
+
+  const finalPrice = discountedPrice ?? priceAmount;
+
+  const discountPercentage = hasDiscount
+    ? Math.round(((priceAmount - finalPrice) / priceAmount) * 100)
+    : 0;
+
+  const savingsAmount = priceAmount - finalPrice;
+
+  // Only format the price for display.
+  const formatPrice = (amount: number) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(amount);
+
+  // Use the public URL directly.
+  const imageSrc = course.media.bannerPath || course.media.thumbnailPath;
+
+  const duration = formatDuration(course.estimatedDurationMinutes);
 
   const access = formatAccess(course.access);
-
-  const imageSrc =
-    getCourseImageUrl(
-      course.media.bannerPath,
-    ) ??
-    getCourseImageUrl(
-      course.media.thumbnailPath,
-    );
 
   return (
     <div
@@ -302,7 +281,7 @@ function CourseInfoCard({
             src={imageSrc}
             alt={course.title}
             fill
-            sizes="(max-width: 1023px) 100vw, 380px"
+            unoptimized
             className="object-contain"
           />
         ) : (
@@ -327,9 +306,7 @@ function CourseInfoCard({
               />
             </div>
 
-            <p className="text-lg font-bold text-white">
-              {course.title}
-            </p>
+            <p className="text-lg font-bold text-white">{course.title}</p>
 
             <p className="mt-2 text-xs uppercase tracking-widest text-cyan-200">
               AV Art Academy
@@ -337,7 +314,7 @@ function CourseInfoCard({
           </div>
         )}
 
-        {pricing.isFree && (
+        {isFree && (
           <span
             className="
               absolute left-3 top-3
@@ -350,7 +327,7 @@ function CourseInfoCard({
           </span>
         )}
 
-        {pricing.hasDiscount && (
+        {hasDiscount && (
           <span
             className="
               absolute right-3 top-3
@@ -360,7 +337,7 @@ function CourseInfoCard({
               text-[#1C1917]
             "
           >
-            {pricing.discountPercentage}% OFF
+            {discountPercentage}% OFF
           </span>
         )}
       </div>
@@ -370,9 +347,7 @@ function CourseInfoCard({
       ====================================== */}
 
       <div className="p-5 sm:p-6">
-        <p className="text-xs font-medium text-slate-400">
-          Course price
-        </p>
+        <p className="text-xs font-medium text-slate-400">Course price</p>
 
         <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span
@@ -381,27 +356,25 @@ function CourseInfoCard({
               tracking-tight text-white
             "
           >
-            {pricing.displayPrice}
+            {isFree ? "Free" : formatPrice(finalPrice)}
           </span>
 
-          {pricing.hasDiscount && (
+          {hasDiscount && (
             <span className="text-base text-slate-400 line-through">
-              {pricing.originalPrice}
+              {formatPrice(priceAmount)}
             </span>
           )}
         </div>
 
-        {pricing.hasDiscount && (
+        {hasDiscount && (
           <p className="mt-2 text-xs font-semibold text-emerald-400">
-            Save {pricing.displaySavings} on this course
+            Save {formatPrice(savingsAmount)} on this course
           </p>
         )}
 
         {/* Authentication / Enrollment */}
         <div className="mt-5">
-          <CourseEnrollmentAction
-            isFree={pricing.isFree}
-          />
+          <CourseEnrollmentAction isFree={isFree} />
         </div>
 
         <p className="mt-3 text-center text-xs leading-5 text-slate-400">
@@ -413,12 +386,9 @@ function CourseInfoCard({
         ==================================== */}
 
         <div className="mt-6 border-t border-white/10 pt-5">
-          <h2 className="text-sm font-bold text-white">
-            Course information
-          </h2>
+          <h2 className="text-sm font-bold text-white">Course information</h2>
 
           <dl className="mt-4 space-y-4 text-sm">
-
             {course.language && (
               <div className="flex items-center justify-between gap-3">
                 <dt className="flex items-center gap-2 text-slate-400">
@@ -479,25 +449,17 @@ function CourseInfoCard({
 
             {course.liveClassesAvailable && (
               <div className="flex items-center justify-between gap-3">
-                <dt className="text-slate-400">
-                  Live classes
-                </dt>
+                <dt className="text-slate-400">Live classes</dt>
 
-                <dd className="font-semibold text-emerald-400">
-                  Available
-                </dd>
+                <dd className="font-semibold text-emerald-400">Available</dd>
               </div>
             )}
 
             {course.certificateAvailable && (
               <div className="flex items-center justify-between gap-3">
-                <dt className="text-slate-400">
-                  Certificate
-                </dt>
+                <dt className="text-slate-400">Certificate</dt>
 
-                <dd className="font-semibold text-emerald-400">
-                  Available
-                </dd>
+                <dd className="font-semibold text-emerald-400">Available</dd>
               </div>
             )}
           </dl>
@@ -579,9 +541,7 @@ function CourseContentSection({
               <CheckIcon />
             </span>
 
-            <span className="text-sm leading-6 text-slate-300">
-              {item}
-            </span>
+            <span className="text-sm leading-6 text-slate-300">{item}</span>
           </li>
         ))}
       </ul>
@@ -593,9 +553,7 @@ function CourseContentSection({
    MAIN COURSE DETAILS PAGE
 ========================================== */
 
-export default async function CourseDetailsPage({
-  params,
-}: CoursePageProps) {
+export default async function CourseDetailsPage({ params }: CoursePageProps) {
   const { slug } = await params;
 
   const course = await getCourseBySlug(slug);
@@ -604,18 +562,13 @@ export default async function CourseDetailsPage({
     notFound();
   }
 
-  const duration = formatDuration(
-    course.estimatedDurationMinutes,
-  );
+  const duration = formatDuration(course.estimatedDurationMinutes);
 
   return (
     <>
       <Header />
 
-      <main
-        id="main-content"
-        className="min-h-screen bg-[#080D1D]"
-      >
+      <main id="main-content" className="min-h-screen bg-[#080D1D]">
         {/* ===================================
             COURSE HERO
         ==================================== */}
@@ -658,28 +611,19 @@ export default async function CourseDetailsPage({
                 text-xs text-slate-400
               "
             >
-              <Link
-                href="/"
-                className="hover:text-cyan-300"
-              >
+              <Link href="/" className="hover:text-cyan-300">
                 Home
               </Link>
 
               <span aria-hidden="true">/</span>
 
-              <Link
-                href="/courses"
-                className="hover:text-cyan-300"
-              >
+              <Link href="/courses" className="hover:text-cyan-300">
                 Courses
               </Link>
 
               <span aria-hidden="true">/</span>
 
-              <span
-                aria-current="page"
-                className="text-cyan-300"
-              >
+              <span aria-current="page" className="text-cyan-300">
                 Course Details
               </span>
             </nav>
@@ -833,7 +777,6 @@ export default async function CourseDetailsPage({
           ================================== */}
 
           <div className="min-w-0 space-y-6 lg:order-1">
-
             {/* About course */}
             <section
               aria-labelledby="about-course-title"
@@ -863,8 +806,7 @@ export default async function CourseDetailsPage({
                   sm:text-base sm:leading-8
                 "
               >
-                {course.description ||
-                  course.shortDescription}
+                {course.description || course.shortDescription}
               </p>
             </section>
 
@@ -909,10 +851,8 @@ export default async function CourseDetailsPage({
               </h2>
 
               <p className="mt-3 text-sm leading-7 text-slate-300">
-                Need help choosing the right course?
-                Our team can guide you based on your
-                learning goals and exam preparation
-                requirements.
+                Need help choosing the right course? Our team can guide you
+                based on your learning goals and exam preparation requirements.
               </p>
 
               <div className="mt-5 flex flex-wrap gap-3">
