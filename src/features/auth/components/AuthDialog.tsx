@@ -15,6 +15,7 @@ import {
 import { authApi, AuthApiError } from "../api/authApi";
 
 import GoogleSignIn from "./GoogleSignIn";
+import ForgotPasswordForm from "./ForgotPasswordForm";
 
 import type {
   AuthMode,
@@ -763,16 +764,18 @@ export default function AuthDialog({
           <h2
             id="auth-dialog-title"
             className="
-              text-2xl font-extrabold
-              leading-tight tracking-tight
-              sm:text-[28px]
-            "
+    text-2xl font-extrabold
+    leading-tight tracking-tight
+    sm:text-[28px]
+  "
           >
             {step === "login"
               ? "Welcome back!"
               : step === "signup"
                 ? "Create your account"
-                : "Verify your email"}
+                : step === "forgot"
+                  ? "Forgot your password?"
+                  : "Verify your email"}
           </h2>
 
           <p
@@ -818,31 +821,33 @@ export default function AuthDialog({
         {/* =====================================
             GOOGLE SIGN-IN
         ====================================== */}
-        {step !== "verify" && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-          <div className="mt-5">
-            <GoogleSignIn
-              onCredential={handleGoogle}
-              onError={showError}
-              disabled={busy}
-            />
 
-            <div className="my-5 flex items-center gap-3">
-              <span className="h-px flex-1 bg-white/10" />
+        {(step === "login" || step === "signup") &&
+          process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+            <div className="mt-5">
+              <GoogleSignIn
+                onCredential={handleGoogle}
+                onError={showError}
+                disabled={busy}
+              />
 
-              <span
-                className="
-                    text-[10px] font-medium
-                    uppercase tracking-wider
-                    text-slate-500
-                  "
-              >
-                Or continue with email
-              </span>
+              <div className="my-5 flex items-center gap-3">
+                <span className="h-px flex-1 bg-white/10" />
 
-              <span className="h-px flex-1 bg-white/10" />
+                <span
+                  className="
+            text-[10px] font-medium
+            uppercase tracking-wider
+            text-slate-500
+          "
+                >
+                  Or continue with email
+                </span>
+
+                <span className="h-px flex-1 bg-white/10" />
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* =====================================
             LOGIN FORM
@@ -867,12 +872,20 @@ export default function AuthDialog({
             <PasswordField disabled={busy} />
 
             <div className="flex justify-end">
-              <Link
-                href="/contact"
-                className="text-xs font-semibold text-cyan-300 hover:text-cyan-200"
+              <button
+                type="button"
+                onClick={() => changeStep("forgot")}
+                disabled={busy}
+                className="
+      text-xs font-semibold
+      text-cyan-300
+      transition-colors
+      hover:text-cyan-200
+          disabled:opacity-50
+     "
               >
-                Need help with your password?
-              </Link>
+                Forgot password?
+              </button>
             </div>
 
             <button
@@ -1144,6 +1157,33 @@ export default function AuthDialog({
               </button>
             </div>
           </form>
+        )}
+
+        {/* =====================================
+    FORGOT PASSWORD FLOW
+====================================== */}
+
+        {step === "forgot" && (
+          <ForgotPasswordForm
+            initialEmail={email}
+            busy={busy}
+            runRequest={runRequest}
+            onError={showError}
+            onBack={() => {
+              changeStep("login");
+            }}
+            onComplete={(recoveredEmail) => {
+              // Keep the email prefilled in login.
+              setEmail(recoveredEmail);
+
+              // Clear registration verification state.
+              setOtp("");
+              setChallenge(null);
+
+              // Return to login after password reset.
+              setStep("login");
+            }}
+          />
         )}
 
         {/* =====================================

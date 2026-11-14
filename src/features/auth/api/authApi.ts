@@ -15,6 +15,10 @@ import type {
   ResendRegistrationResponse,
   RefreshResponse,
   AuthUser,
+  ForgotPasswordRequest,
+  VerifyPasswordResetRequest,
+  VerifyPasswordResetResponse,
+  ResetPasswordRequest,
 } from "../types";
 
 // Keep compatibility with existing AuthDialog
@@ -183,6 +187,50 @@ export const authApi = {
               Authorization: `Bearer ${accessToken}`,
             }
           : undefined,
+      },
+      true,
+    );
+  },
+
+  /* =========================================
+   REQUEST PASSWORD RESET OTP
+========================================== */
+
+  forgotPassword(payload: ForgotPasswordRequest): Promise<void> {
+    return apiRequest<void>(
+      {
+        method: "POST",
+        url: "/auth/forgot-password/request",
+        data: payload,
+      },
+      true,
+    );
+  },
+
+  /* =========================================
+   VERIFY PASSWORD RESET OTP
+========================================== */
+
+  verifyPasswordReset(
+    payload: VerifyPasswordResetRequest,
+  ): Promise<VerifyPasswordResetResponse> {
+    return apiRequest<VerifyPasswordResetResponse>({
+      method: "POST",
+      url: "/auth/forgot-password/verify",
+      data: payload,
+    });
+  },
+
+  /* =========================================
+   RESET PASSWORD
+========================================== */
+
+  resetPassword(payload: ResetPasswordRequest): Promise<void> {
+    return apiRequest<void>(
+      {
+        method: "POST",
+        url: "/auth/forgot-password/reset",
+        data: payload,
       },
       true,
     );
