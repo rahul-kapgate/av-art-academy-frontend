@@ -109,7 +109,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       >
         <AuthProvider>{children}</AuthProvider>
         <Toaster
-          position="top-right"
+          position="bottom-right"
           theme="dark"
           richColors
           closeButton
