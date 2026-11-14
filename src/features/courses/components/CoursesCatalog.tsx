@@ -183,11 +183,15 @@ function CoursesCatalog({ items }: CoursesCatalogProps) {
         break;
 
       case "duration":
-        result.sort(
-          (a, b) =>
-            a.course.estimatedDurationMinutes -
-            b.course.estimatedDurationMinutes,
-        );
+        result.sort((a, b) => {
+          const durationA =
+            a.course.estimatedDurationMinutes ?? Number.MAX_SAFE_INTEGER;
+
+          const durationB =
+            b.course.estimatedDurationMinutes ?? Number.MAX_SAFE_INTEGER;
+
+          return durationA - durationB;
+        });
         break;
 
       case "name":
