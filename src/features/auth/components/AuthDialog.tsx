@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Toaster, toast } from "sonner";
 
 import {
   useEffect,
@@ -296,7 +297,16 @@ export default function AuthDialog({
 
   const [busy, setBusy] = useState(false);
 
-  const [error, setError] = useState("");
+  function showError(message: string) {
+    toast.error(message, {
+      toasterId: "auth-toaster",
+      id: "auth-error",
+    });
+  }
+
+  function clearError() {
+    toast.dismiss("auth-error");
+  }
 
   const [notice, setNotice] = useState("");
 
@@ -362,27 +372,28 @@ export default function AuthDialog({
   /* =========================================
      SHARED REQUEST HANDLER
   ========================================== */
+
   async function runRequest(action: () => Promise<void>) {
     if (requestInProgressRef.current) return;
 
     requestInProgressRef.current = true;
 
     setBusy(true);
-    setError("");
+    clearError();
 
     try {
       await action();
     } catch (requestError) {
       if (requestError instanceof AuthApiError) {
         if (requestError.status === 410 && step === "verify") {
-          setError(
-            "Your verification code or registration session has expired. Try resending the code or start registration again.",
+          showError(
+            "Your verification code has expired. Please request a new code.",
           );
         } else {
-          setError(requestError.message);
+          showError(requestError.message);
         }
       } else {
-        setError(
+        showError(
           "Unable to connect. Please check your internet connection and try again.",
         );
       }
@@ -398,7 +409,7 @@ export default function AuthDialog({
   function changeStep(nextStep: AuthStep) {
     if (requestInProgressRef.current) return;
 
-    setError("");
+    clearError();
     setNotice("");
     setOtp("");
 
@@ -458,13 +469,13 @@ export default function AuthDialog({
     const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
     if (name.length < 2) {
-      setError("Please enter your full name.");
+      showError("Please enter your full name.");
 
       return;
     }
 
     if (!/^\+[1-9]\d{7,14}$/.test(mobile)) {
-      setError(
+      showError(
         "Enter a valid mobile number with country code, for example +919876543210.",
       );
 
@@ -472,13 +483,13 @@ export default function AuthDialog({
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      showError("Passwords do not match.");
 
       return;
     }
 
     if (formData.get("terms") !== "on") {
-      setError("Please accept the Terms of Use and Privacy Policy.");
+      showError("Please accept the Terms of Use and Privacy Policy.");
 
       return;
     }
@@ -514,13 +525,13 @@ export default function AuthDialog({
     event.preventDefault();
 
     if (!challenge) {
-      setError("Registration session not found. Please register again.");
+      showError("Registration session not found. Please register again.");
 
       return;
     }
 
     if (Date.now() >= challenge.expiresAt) {
-      setError(
+      showError(
         "Your verification code has expired. Please request a new code.",
       );
 
@@ -528,7 +539,7 @@ export default function AuthDialog({
     }
 
     if (!/^\d{6}$/.test(otp)) {
-      setError("Please enter a valid 6-digit code.");
+      showError("Please enter a valid 6-digit code.");
 
       return;
     }
@@ -549,9 +560,10 @@ export default function AuthDialog({
       setOtp("");
       setStep("login");
 
-      setNotice(
-        "Your account has been created successfully. Sign in to continue.",
-      );
+      toast.success("Account created successfully!", {
+        description: "Sign in to start learning.",
+        toasterId: "auth-toaster",
+      });
     });
   }
 
@@ -589,7 +601,10 @@ export default function AuthDialog({
 
       setOtp("");
 
-      setNotice("A new verification code has been sent to your email.");
+      toast.success("Verification code sent!", {
+        description: "Please check your email.",
+        toasterId: "auth-toaster",
+      });
     });
   }
 
@@ -614,7 +629,6 @@ export default function AuthDialog({
       aria-describedby="auth-dialog-description"
       onCancel={(event) => {
         event.preventDefault();
-
         requestClose();
       }}
       onClick={(event) => {
@@ -642,6 +656,18 @@ export default function AuthDialog({
         sm:rounded-[24px]
       "
     >
+      <Toaster
+        id="auth-toaster"
+        position="top-center"
+        theme="dark"
+        richColors
+        closeButton
+        duration={4000}
+        visibleToasts={2}
+        offset={24}
+        mobileOffset={16}
+      />
+
       <div className="px-5 pb-6 pt-4 sm:p-7">
         {/* =====================================
             MOBILE HANDLE
@@ -771,25 +797,6 @@ export default function AuthDialog({
         </div>
 
         {/* =====================================
-            API ERROR
-        ====================================== */}
-        {error && (
-          <div
-            role="alert"
-            className="
-              mt-4 rounded-xl
-              border border-red-400/20
-              bg-red-400/10
-              px-4 py-3
-              text-xs leading-6
-              text-red-300
-            "
-          >
-            {error}
-          </div>
-        )}
-
-        {/* =====================================
             SUCCESS MESSAGE
         ====================================== */}
         {notice && (
@@ -815,7 +822,7 @@ export default function AuthDialog({
           <div className="mt-5">
             <GoogleSignIn
               onCredential={handleGoogle}
-              onError={setError}
+              onError={showError}
               disabled={busy}
             />
 

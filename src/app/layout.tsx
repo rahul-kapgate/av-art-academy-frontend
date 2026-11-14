@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/src/features/auth/context/AuthProvider";
+import { Toaster } from "sonner";
 
 import "./globals.css";
 
@@ -107,6 +108,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         "
       >
         <AuthProvider>{children}</AuthProvider>
+        <Toaster
+          position="top-right"
+          theme="dark"
+          richColors
+          closeButton
+          duration={4000}
+        />
       </body>
     </html>
   );
