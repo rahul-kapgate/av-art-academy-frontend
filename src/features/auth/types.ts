@@ -1,6 +1,6 @@
 export type AuthMode = "login" | "signup";
 
-export type AuthStep = AuthMode | "verify";
+export type AuthStep = AuthMode | "verify" | "forgot";
 
 export interface AuthUser {
   id?: string;
@@ -95,4 +95,39 @@ export interface RefreshResponse {
   sessionExpiresAt?: string;
 
   user?: AuthUser;
+}
+
+
+
+/* =========================================
+   FORGOT PASSWORD
+========================================== */
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+/* =========================================
+   VERIFY PASSWORD RESET OTP
+========================================== */
+
+export interface VerifyPasswordResetRequest {
+  email: string;
+  otp: string;
+}
+
+export interface VerifyPasswordResetResponse {
+  resetToken: string;
+  expiresIn: number;
+  resetSessionId: string;
+}
+
+/* =========================================
+   RESET PASSWORD
+========================================== */
+
+export interface ResetPasswordRequest {
+  resetToken: string;
+  newPassword: string;
+  confirmPassword: string;
 }
