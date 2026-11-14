@@ -1,12 +1,12 @@
-
 import "server-only";
 
 import { cacheLife, cacheTag } from "next/cache";
 
 import { apiRequest } from "@/src/lib/api/client";
+
 import { ApiError } from "@/src/lib/api/apiError";
 
-import type { Course } from "../types";
+import type { Course, CourseApiItem } from "../types";
 
 export async function getCourses(): Promise<Course[]> {
   "use cache";
@@ -25,7 +25,7 @@ export async function getCourses(): Promise<Course[]> {
     throw new Error("API_BASE_URL is not configured.");
   }
 
-  const courses = await apiRequest<Course[]>({
+  const courses = await apiRequest<CourseApiItem[]>({
     method: "GET",
 
     baseURL: `${apiBaseUrl.replace(/\/+$/, "")}/api/v1`,
@@ -38,11 +38,16 @@ export async function getCourses(): Promise<Course[]> {
   });
 
   if (!Array.isArray(courses)) {
-    throw new ApiError(
-      "Invalid courses API response.",
-      502,
-    );
+    throw new ApiError("Invalid courses API response.", 502);
   }
 
-  return courses;
+  return courses.map((course) => {
+    const { tuhumbnailUrl, thumbnailUrl, ...courseData } = course;
+
+    return {
+      ...courseData,
+
+      thumbnailUrl: thumbnailUrl?.trim() || tuhumbnailUrl?.trim() || null,
+    };
+  });
 }

@@ -18,10 +18,15 @@ const thumbnailThemes = [
   "from-[#064E3B] via-[#047857] to-[#115E59]",
 ];
 
-function formatDuration(minutes: number): string {
-  const totalMinutes = Math.max(0, Math.floor(minutes));
+function formatDuration(minutes: number | null): string | null {
+  if (minutes === null || !Number.isFinite(minutes) || minutes <= 0) {
+    return null;
+  }
+
+  const totalMinutes = Math.floor(minutes);
 
   const hours = Math.floor(totalMinutes / 60);
+
   const remainingMinutes = totalMinutes % 60;
 
   if (hours === 0) {
@@ -156,12 +161,29 @@ function CourseCard({ course, index = 0, thumbnailSrc }: CourseCardProps) {
     title,
     slug,
     shortDescription,
+    thumbnailUrl,
     estimatedDurationMinutes,
     pricing,
     courseIncludes,
   } = course;
 
   const { isFree, priceAmount, salePriceAmount, currency } = pricing;
+
+  /* =========================================
+     COURSE IMAGE
+  ========================================== */
+
+  const imageSrc = thumbnailSrc ?? thumbnailUrl;
+
+  /* =========================================
+     COURSE DURATION
+  ========================================== */
+
+  const duration = formatDuration(estimatedDurationMinutes);
+
+  /* =========================================
+     COURSE PRICING
+  ========================================== */
 
   const discountedPrice =
     !isFree &&
@@ -179,6 +201,10 @@ function CourseCard({ course, index = 0, thumbnailSrc }: CourseCardProps) {
   const discountPercentage = hasDiscount
     ? Math.round(((priceAmount - finalPrice) / priceAmount) * 100)
     : 0;
+
+  /* =========================================
+     COURSE UI
+  ========================================== */
 
   const theme = thumbnailThemes[index % thumbnailThemes.length];
 
@@ -217,74 +243,70 @@ function CourseCard({ course, index = 0, thumbnailSrc }: CourseCardProps) {
           sm:h-40
         "
       >
-        {thumbnailSrc ? (
+        {imageSrc ? (
           <Image
-            src={thumbnailSrc}
+            src={imageSrc}
             alt={title}
             fill
-            sizes="
-              (max-width: 640px) 100vw,
-              (max-width: 1024px) 50vw,
-              33vw
-            "
+            unoptimized
+            loading="lazy"
             className="
-              object-cover
-              transition-transform duration-500
-              motion-safe:group-hover:scale-105
-            "
+      object-cover
+      transition-transform duration-500
+      motion-safe:group-hover:scale-105
+    "
           />
         ) : (
-          /* Thumbnail Placeholder */
           <div
             aria-hidden="true"
             className={`
-              absolute inset-0
-              flex items-center justify-between
-              overflow-hidden
-              bg-linear-to-br
-              ${theme}
-              px-4 pt-8 pb-7
-            `}
+      absolute inset-0
+      flex items-center justify-between
+      overflow-hidden
+      bg-linear-to-br
+      ${theme}
+      px-4 pt-8 pb-7
+    `}
           >
             {/* Background Grid */}
             <div
               className="
-                absolute inset-0
-                bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)]
-                bg-size-[24px_24px]
-              "
+        absolute inset-0
+        bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)]
+        bg-size-[24px_24px]
+      "
             />
 
             {/* Decorative Ring */}
             <div
               className="
-                absolute -bottom-24
-                -right-12 h-52 w-52
-                rounded-full
-                border border-white/10
-              "
+        absolute -bottom-24
+        -right-12 h-52 w-52
+        rounded-full
+        border border-white/10
+      "
             />
 
             {/* Course Branding */}
             <div className="relative z-10 min-w-0 max-w-[65%]">
               <p
                 className="
-                  text-[9px] font-semibold
-                  uppercase tracking-[0.15em]
-                  text-white/70
-                "
+          text-[9px] font-semibold
+          uppercase tracking-[0.15em]
+          text-white/70
+        "
               >
                 AV Art Academy
               </p>
 
               <p
                 className="
-                  mt-1.5 line-clamp-3
-                  text-base font-extrabold
-                  leading-tight
-                  tracking-tight text-white
-                  sm:text-lg
-                "
+          mt-1.5 line-clamp-3
+          text-base font-extrabold
+          leading-tight
+          tracking-tight text-white
+          sm:text-lg
+        "
               >
                 {title}
               </p>
@@ -336,21 +358,24 @@ function CourseCard({ course, index = 0, thumbnailSrc }: CourseCardProps) {
         ) : null}
 
         {/* Course Duration */}
-        <div
-          className="
-            absolute bottom-2.5 right-3
-            z-20 flex items-center gap-1.5
-            rounded-md
-            bg-[#050816]/85
-            px-2 py-1
-            text-[10px] font-medium
-            text-white
-          "
-        >
-          <ClockIcon />
 
-          {formatDuration(estimatedDurationMinutes)}
-        </div>
+        {duration && (
+          <div
+            className="
+      absolute bottom-2.5 right-3
+      z-20 flex items-center gap-1.5
+      rounded-md
+      bg-[#050816]/85
+      px-2 py-1
+      text-[10px] font-medium
+      text-white
+    "
+          >
+            <ClockIcon />
+
+            {duration}
+          </div>
+        )}
       </div>
 
       {/* =========================================
