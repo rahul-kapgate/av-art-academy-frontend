@@ -1,14 +1,13 @@
 import Link from "next/link";
 
 import CourseCard from "@/src/features/courses/components/CourseCard";
-import { mockCourses } from "@/src/features/courses/data/mockCourses";
 
 import type { Course } from "@/src/features/courses/types";
 
 import CoursesCarousel from "@/src/features/courses/components/CoursesCarousel";
 
 interface CoursesSectionProps {
-  courses?: Course[];
+  courses : Course[];
 }
 
 function ArrowIcon() {
@@ -101,7 +100,7 @@ function EmptyCourses() {
   );
 }
 
-function CoursesSection({ courses = mockCourses }: CoursesSectionProps) {
+function CoursesSection({ courses  }: CoursesSectionProps) {
   return (
     <section
       id="courses"

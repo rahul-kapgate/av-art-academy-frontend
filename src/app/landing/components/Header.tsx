@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+
 import MobileMenu from "./MobileMenu";
 import AuthButton from "@/src/features/auth/components/AuthButton";
 
@@ -28,7 +29,9 @@ function Header() {
         className="
           mx-auto flex h-20 max-w-7xl
           items-center justify-between
-          gap-5 px-4 sm:px-6
+          gap-2 px-3
+          sm:gap-4 sm:px-6
+          lg:gap-5
         "
       >
         {/* Brand */}
@@ -36,8 +39,9 @@ function Header() {
           href="/"
           aria-label="AV Art Academy - Home"
           className="
-            group flex shrink-0
-            items-center gap-3
+            group flex min-w-0
+            items-center gap-2
+            sm:gap-3
           "
         >
           <Image
@@ -48,29 +52,34 @@ function Header() {
             loading="eager"
             sizes="44px"
             className="
-              h-11 w-11 rounded-lg
-              object-contain
+              h-10 w-10 shrink-0
+              rounded-lg object-contain
               transition-transform duration-200
               group-hover:scale-105
+              sm:h-11 sm:w-11
             "
           />
 
-          <div className="flex flex-col leading-tight">
+          <div className="flex min-w-0 flex-col leading-tight">
             <span
               className="
-                text-lg font-bold
-                tracking-tight sm:text-xl
+                block truncate
+                text-base font-bold
+                tracking-tight
+                sm:text-xl
                 md:text-2xl
               "
             >
               <span className="text-cyan-400">AV Art</span>
+
               <span className="text-white"> Academy</span>
             </span>
 
             <span
               className="
-                hidden text-[10px]
-                uppercase tracking-widest
+                hidden whitespace-nowrap
+                text-[10px] uppercase
+                tracking-widest
                 text-gray-400 sm:block
               "
             >
@@ -84,7 +93,7 @@ function Header() {
           aria-label="Main navigation"
           className="
             hidden items-center
-            gap-8 lg:flex
+            gap-5 lg:flex xl:gap-8
           "
         >
           {navLinks.map((link) => (
@@ -92,13 +101,15 @@ function Header() {
               key={link.href}
               href={link.href}
               className="
-                text-base font-medium
+                whitespace-nowrap
+                text-sm font-medium
                 text-gray-200
                 transition-colors duration-200
                 hover:text-cyan-300
                 focus-visible:rounded
                 focus-visible:outline-2
                 focus-visible:outline-cyan-400
+                xl:text-base
               "
             >
               {link.label}
@@ -106,27 +117,29 @@ function Header() {
           ))}
         </nav>
 
-        {/* Desktop Login */}
+        {/* Desktop Login / Profile */}
+        <div className="hidden shrink-0 items-center lg:flex">
+          <AuthButton
+            mode="login"
+            showSession
+            className="
+              inline-flex min-h-10
+              items-center justify-center
+              rounded-lg bg-cyan-400
+              px-5 py-2.5
+              text-sm font-bold
+              text-[#061426]
+              transition-colors
+              hover:bg-cyan-300
+              disabled:opacity-50
+            "
+          />
+        </div>
 
-        <AuthButton
-          mode="login"
-          showSession
-          className="
-    inline-flex min-h-10
-    items-center justify-center
-    rounded-lg bg-cyan-400
-    px-5 py-2.5
-    text-sm font-bold
-    text-[#061426]
-    transition-colors
-    hover:bg-cyan-300
-    disabled:cursor-not-allowed
-    disabled:opacity-50
-  "
-        />
-
-        {/* Interactive Mobile Menu */}
-        <MobileMenu links={navLinks} />
+        {/* Mobile Avatar + Hamburger Menu */}
+        <div className="shrink-0 lg:hidden">
+          <MobileMenu links={navLinks} />
+        </div>
       </div>
     </header>
   );

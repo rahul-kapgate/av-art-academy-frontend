@@ -11,8 +11,6 @@ import { getCourses } from "@/src/features/courses/api/getCourses";
 const description =
   "Explore MAH AAC CET preparation courses, perspective drawing, memory drawing, object drawing, 2D design, colour theory and art entrance exam preparation at AV Art Academy.";
 
-const isMockData = process.env.COURSES_DATA_SOURCE !== "api";
-
 export const metadata: Metadata = {
   title: "Online Art Courses & MAH AAC CET Preparation",
 
@@ -24,22 +22,28 @@ export const metadata: Metadata = {
 
   openGraph: {
     title: "Explore Art Courses | AV Art Academy",
+
     description,
+
     url: "/courses",
+
     type: "website",
+
     siteName: "AV Art Academy",
+
     locale: "en_IN",
   },
 
   twitter: {
     card: "summary",
+
     title: "Explore Art Courses | AV Art Academy",
+
     description,
   },
 
-  // Do not index dummy course prices or content.
   robots: {
-    index: !isMockData,
+    index: true,
     follow: true,
   },
 };
@@ -106,7 +110,6 @@ export default async function CoursesPage() {
   const catalogItems = courses.map((course, index) => ({
     course,
 
-    // Reuse the same server-rendered course card.
     card: <CourseCard course={course} index={index} />,
   }));
 
@@ -319,22 +322,6 @@ export default async function CoursesPage() {
             sm:px-8 sm:py-14
           "
         >
-          {/* Dummy Data Notice */}
-          {isMockData && (
-            <div
-              className="
-                mb-5 rounded-xl
-                border border-amber-400/20
-                bg-amber-400/5
-                px-4 py-3
-                text-xs leading-6
-                text-amber-200
-              "
-            >
-              Preview catalogue: course information and prices are sample data
-              for development.
-            </div>
-          )}
 
           <CoursesCatalog items={catalogItems} />
 
