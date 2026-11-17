@@ -433,7 +433,7 @@ function AppDownloadSection() {
               "
             >
               <Image
-                src="/app-screenshot.png"
+                src="/app-screenshot.jpeg"
                 alt="AV Art Academy Android app showing courses and learning resources for MAH AAC CET preparation"
                 fill
                 sizes="
